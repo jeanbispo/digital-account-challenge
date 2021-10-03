@@ -1,21 +1,18 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-
-import AccountLimitHistoryStorage from 'App/Models/AccountLimitHistory/AccountLimitHistoryStorage'
+import { indexService, showService } from 'App/Services/AccountLimitsService'
 
 export default class AccountLimitsController {
-  public async index({ request, response }: HttpContextContract) {
+  public async index({ response }: HttpContextContract) {
     try {
-      const accountsList = AccountLimitHistoryStorage.getList()
+      const accountsList = await indexService()
       response.send(accountsList)
-    } catch (error) {
-      console.log(error)
-    }
+    } catch (error) {}
   }
 
   public async show({ request, response }: HttpContextContract) {
     try {
       const { id: uuid } = request.params()
-      const account = AccountLimitHistoryStorage.getAccountLimitHistoryByField(uuid, 'uuid')
+      const account = await showService(uuid)
       response.send(account)
     } catch (error) {}
   }
