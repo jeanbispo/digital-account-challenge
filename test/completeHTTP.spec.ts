@@ -12,7 +12,6 @@ import { accountAlreadyInitialized, doubleTransaction, invalidData } from './moc
 test.group('Complete HTTP Test', () => {
   const acount1 = mockStoreAccount()
   const acount2 = mockStoreAccount()
-  // test.skipInCI('I will be skipped in CI', () => {
   test('If Initialize Account 1', async () => {
     await supertest(BASE_URL).post('/input').send(acount1).expect(200)
   })
@@ -102,5 +101,4 @@ test.group('Complete HTTP Test', () => {
     const response = JSON.parse(text)
     assert.deepEqual(response, invalidData('transaction_history'))
   })
-  // })
 })
