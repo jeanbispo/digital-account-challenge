@@ -1,4 +1,4 @@
-name: Build
+name: Test
 on:
   push:
     branches:
@@ -12,7 +12,7 @@ jobs:
     env:
        PORT: 3333
        HOST: 0.0.0.0
-       APP_KEY: testkey
+       APP_KEY: kRL2tId_lkGGxPymMExxfVoqAnyzXM_v
        DRIVE_DISK: local
        NODE_ENV: testing
     steps:
