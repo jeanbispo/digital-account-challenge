@@ -9,10 +9,10 @@ import { mockGetTransactionHistory } from './mocks/transactionHistory.mock'
 import deepClone from 'App/Helpers/deepClone'
 import { accountAlreadyInitialized, doubleTransaction, invalidData } from './mocks/errors.mock'
 
-// test.group('Complete HTTP Test', () => {
-const acount1 = mockStoreAccount()
-const acount2 = mockStoreAccount()
-test.skipInCI('I will be skipped in CI', () => {
+test.group('Complete HTTP Test', () => {
+  const acount1 = mockStoreAccount()
+  const acount2 = mockStoreAccount()
+  // test.skipInCI('I will be skipped in CI', () => {
   test('If Initialize Account 1', async () => {
     await supertest(BASE_URL).post('/input').send(acount1).expect(200)
   })
