@@ -6,6 +6,11 @@ export const mockStoreAccount = (): IstoreAccountBody => ({
   payload: {
     'name': faker.name.findName(),
     'document': faker.finance.account(),
-    'available-limit': Number(faker.finance.mask()),
+    'available-limit': Number(
+      faker.random.number({
+        min: 400,
+        max: 1000,
+      })
+    ),
   },
 })
