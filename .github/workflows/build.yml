@@ -9,7 +9,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    env:
+       PORT: 3333
+       HOST: 0.0.0.0
     steps:
     - uses: actions/checkout@v2
     - name: Install modules
