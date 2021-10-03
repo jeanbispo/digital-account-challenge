@@ -1,11 +1,11 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Event from '@ioc:Adonis/Core/Event'
-import { storeService, indexService } from 'App/Services/TransactionsService'
+import { storeService, indexService } from 'App/Services/Transactions'
 
 export default class TransactionsController {
   public async index({ response }: HttpContextContract) {
     try {
-      const transactionsList = indexService()
+      const transactionsList = await indexService()
       response.send(transactionsList)
     } catch (error) {}
   }

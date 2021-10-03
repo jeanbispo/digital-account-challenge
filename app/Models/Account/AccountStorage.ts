@@ -1,6 +1,6 @@
 import AccountLimitHistoryStorage from 'App/Models/AccountLimitHistory/AccountLimitHistoryStorage'
 
-interface Iaccount {
+interface IaccountStorage {
   name: string
   document: string
   uuid: string
@@ -9,7 +9,7 @@ interface Iaccount {
 export default abstract class AccountStorage {
   private static list: any = []
 
-  public static async getList() {
+  public static async getList(): Promise<Array<IaccountStorage>> {
     return await Promise.all(
       AccountStorage.list.map(async (account) => ({
         ...account,
@@ -32,7 +32,7 @@ export default abstract class AccountStorage {
     return searchResult || {}
   }
 
-  public static addToList(account: Iaccount) {
+  public static addToList(account: IaccountStorage) {
     AccountStorage.list.push(account)
     return this
   }

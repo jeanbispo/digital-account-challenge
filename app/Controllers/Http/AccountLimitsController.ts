@@ -1,5 +1,5 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { indexService, showService } from 'App/Services/AccountLimitsService'
+import { indexService, showService } from 'App/Services/AccountLimits'
 
 export default class AccountLimitsController {
   public async index({ response }: HttpContextContract) {

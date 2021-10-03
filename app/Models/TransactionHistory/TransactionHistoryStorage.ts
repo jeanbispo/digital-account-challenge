@@ -10,7 +10,7 @@ interface ItransactionStorage {
 export default abstract class TransactionHistoryStorage {
   private static list: any = []
 
-  public static async getList() {
+  public static async getList(): Promise<Array<ItransactionStorage>> {
     return TransactionHistoryStorage.list
   }
 

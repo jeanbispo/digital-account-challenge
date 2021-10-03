@@ -2,12 +2,17 @@ import { RequestContract } from '@ioc:Adonis/Core/Request'
 import { schema } from '@ioc:Adonis/Core/Validator'
 import isEmpty from 'is-empty'
 import { v4 as uuidv4 } from 'uuid'
-
+import { DateTime, Interval } from 'luxon'
 import AccountStorage from 'App/Models/Account/AccountStorage'
 import AccountLimitHistoryStorage from 'App/Models/AccountLimitHistory/AccountLimitHistoryStorage'
 import AccountLimitHistoryScruct from 'App/Models/AccountLimitHistory/AccountLimitHistoryScruct'
 import TransactionHistoryStorage from 'App/Models/TransactionHistory/TransactionHistoryStorage'
 import TransactionHistorySctruct from 'App/Models/TransactionHistory/TransactionHistorySctruct'
+import {
+  IcreateNewAccountsLimitsPayload,
+  IlaunchTransactionPayload,
+  ItransactionEventPayload,
+} from './interfaces'
 
 export const indexService = async () => await TransactionHistoryStorage.getList()
 
@@ -20,6 +25,34 @@ const checkIfAccountsExist = async (
     const receiverAccount = AccountStorage.getAccountByField(receiverDocument, 'document')
     if (isEmpty(senderAccount) || isEmpty(receiverAccount)) throw 'account_not_initialized'
     return { senderUUID: senderAccount.uuid, receiverUUID: receiverAccount.uuid }
+  } catch (error) {
+    throw error
+  }
+}
+
+const checkForDuplicateTransaction = async (
+  senderUUID: string,
+  receiverUUID: string,
+  value: number
+): Promise<any> => {
+  try {
+    const duplicateTransactionsHistoric = (await TransactionHistoryStorage.getList()).filter(
+      (transaciton) => {
+        const now = DateTime.now()
+        const transactionDateTime = DateTime.fromMillis(transaciton.datetime)
+        const intervalDateTimes =
+          Interval.fromDateTimes(transactionDateTime, now).toDuration('minutes').toObject()
+            .minutes || 0
+
+        return (
+          intervalDateTimes < 2 &&
+          transaciton.receiverUUID === receiverUUID &&
+          transaciton.senderUUID === senderUUID &&
+          transaciton.value === value
+        )
+      }
+    )
+    if (duplicateTransactionsHistoric.length) throw 'double_transaction'
   } catch (error) {
     throw error
   }
@@ -50,12 +83,6 @@ const checkIfAccountsHaveLimit = async (
   }
 }
 
-interface IlaunchTransactionPayload {
-  senderUUID: string
-  receiverUUID: string
-  value: number
-}
-
 const launchTransaction = async (payload: IlaunchTransactionPayload): Promise<any> => {
   const transactionHistorySctruct = new TransactionHistorySctruct()
 
@@ -64,17 +91,12 @@ const launchTransaction = async (payload: IlaunchTransactionPayload): Promise<an
   transactionHistorySctruct.senderUUID = payload.senderUUID
   transactionHistorySctruct.receiverUUID = payload.receiverUUID
   transactionHistorySctruct.value = payload.value
-  transactionHistorySctruct.datetime = new Date().valueOf()
+  transactionHistorySctruct.datetime = payload.datetime
 
   const transaction = transactionHistorySctruct.getTransactionData()
   TransactionHistoryStorage.addToList(transaction)
 
   return transaction
-}
-
-interface IcreateNewAccountsLimitsPayload {
-  accountUUID: string
-  availableLimit: number
 }
 
 const createNewAccountLimit = async (payload: IcreateNewAccountsLimitsPayload) => {
@@ -98,16 +120,19 @@ export const storeService = async (request: RequestContract): Promise<Itransacti
         'sender-document': schema.string(),
         'receiver-document': schema.string(),
         'value': schema.number(),
-        'datetime': schema.date(),
+        'datetime': schema.string(),
       }),
     })
 
     const body = await request.validate({ schema: newTransactionValidator })
-    //TODO: Checar Transação duplicada: uma transação de igual valor, igual emissor e igual receptor ocorreu nos 2 minutos anteriores à transação atual.
+
     const { senderUUID, receiverUUID } = await checkIfAccountsExist(
       body.payload['sender-document'],
       body.payload['receiver-document']
     )
+
+    await checkForDuplicateTransaction(senderUUID, receiverUUID, body.payload['value'])
+
     const { senderLimit, receiverLimit } = await checkIfAccountsHaveLimit(
       senderUUID,
       receiverUUID,
@@ -118,6 +143,7 @@ export const storeService = async (request: RequestContract): Promise<Itransacti
       senderUUID,
       receiverUUID,
       value: body.payload.value,
+      datetime: new Date(body.payload.datetime).valueOf(),
     })
 
     const senderAccountLimit = await createNewAccountLimit({
@@ -138,12 +164,6 @@ export const storeService = async (request: RequestContract): Promise<Itransacti
   } catch (error) {
     throw error
   }
-}
-
-export interface ItransactionEventPayload {
-  transaction: any
-  senderAccountLimit: any
-  receiverAccountLimit: any
 }
 
 export const confirmTransaction = async ({

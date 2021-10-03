@@ -9,7 +9,7 @@ interface IaccountLimitStorage {
 export default abstract class AccountLimitHistoryStorage {
   private static list: Array<any> = []
 
-  public static getList() {
+  public static async getList(): Promise<Array<IaccountLimitStorage>> {
     return AccountLimitHistoryStorage.list
   }
 
