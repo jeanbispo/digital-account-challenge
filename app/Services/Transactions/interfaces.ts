@@ -8,6 +8,7 @@ export interface IlaunchTransactionPayload {
 export interface IcreateNewAccountsLimitsPayload {
   accountUUID: string
   availableLimit: number
+  lastTransactionUUID: string
 }
 
 export interface ItransactionEventPayload {

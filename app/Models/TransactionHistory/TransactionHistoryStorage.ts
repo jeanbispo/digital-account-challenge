@@ -14,9 +14,18 @@ export default abstract class TransactionHistoryStorage {
     return TransactionHistoryStorage.list
   }
 
-  public static getAccountByField(valueToSearch: string, field: string) {
+  public static getTransactionByField(valueToSearch: string, field: string) {
     const searchResult = TransactionHistoryStorage.list.find(
-      (_account: any) => _account[field] === valueToSearch
+      (_account: ItransactionStorage) => _account[field] === valueToSearch
+    )
+
+    return searchResult || {}
+  }
+
+  public static getTransactionListByUUID(uuid: string) {
+    const searchResult = TransactionHistoryStorage.list.filter(
+      (_account: ItransactionStorage) =>
+        _account.senderUUID === uuid || _account.receiverUUID === uuid
     )
 
     return searchResult || {}

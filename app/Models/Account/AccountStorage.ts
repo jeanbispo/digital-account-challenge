@@ -24,7 +24,7 @@ export default abstract class AccountStorage {
     )
   }
 
-  public static getAccountByField(valueToSearch: string, field: string) {
+  public static getAccountByField(valueToSearch: string, field: string): IaccountStorage {
     const searchResult = AccountStorage.list.find(
       (_account: any) => _account[field] === valueToSearch
     )

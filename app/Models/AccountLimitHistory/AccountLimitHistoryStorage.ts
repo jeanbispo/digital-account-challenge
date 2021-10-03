@@ -23,6 +23,14 @@ export default abstract class AccountLimitHistoryStorage {
     return searchResult || {}
   }
 
+  public static getAccountLimitByField(valueToSearch: string, field: string) {
+    const searchResult = AccountLimitHistoryStorage.list.find(
+      (_account: any) => _account[field] === valueToSearch
+    )
+
+    return searchResult || {}
+  }
+
   private static async getLastValidAccountLimit(accountLimitHistoric) {
     return accountLimitHistoric.reduce((a, b) => (a.timestamp > b.timestamp ? a : b)) || {}
   }

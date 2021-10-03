@@ -1,5 +1,4 @@
 import { RequestContract } from '@ioc:Adonis/Core/Request'
-import { schema } from '@ioc:Adonis/Core/Validator'
 import isEmpty from 'is-empty'
 import { v4 as uuidv4 } from 'uuid'
 import { DateTime, Interval } from 'luxon'
@@ -8,11 +7,16 @@ import AccountLimitHistoryStorage from 'App/Models/AccountLimitHistory/AccountLi
 import AccountLimitHistoryScruct from 'App/Models/AccountLimitHistory/AccountLimitHistoryScruct'
 import TransactionHistoryStorage from 'App/Models/TransactionHistory/TransactionHistoryStorage'
 import TransactionHistorySctruct from 'App/Models/TransactionHistory/TransactionHistorySctruct'
+import DoubleTransactionException from 'App/Exceptions/DoubleTransactionException'
+import InsufficientLimitException from 'App/Exceptions/InsufficientLimitException'
+import AccountNotInitializedException from 'App/Exceptions/AccountNotInitializedException'
 import {
   IcreateNewAccountsLimitsPayload,
   IlaunchTransactionPayload,
   ItransactionEventPayload,
 } from './interfaces'
+import { newTransactionValidator, showHistoryValidator } from './validators'
+import InvalidDataException from 'App/Exceptions/InvalidDataException'
 
 export const indexService = async () => await TransactionHistoryStorage.getList()
 
@@ -23,7 +27,12 @@ const checkIfAccountsExist = async (
   try {
     const senderAccount = AccountStorage.getAccountByField(senderDocument, 'document')
     const receiverAccount = AccountStorage.getAccountByField(receiverDocument, 'document')
-    if (isEmpty(senderAccount) || isEmpty(receiverAccount)) throw 'account_not_initialized'
+    if (isEmpty(senderAccount) || isEmpty(receiverAccount))
+      throw new AccountNotInitializedException(
+        'account_not_initialized',
+        406,
+        'E_ACCOUNT_NOT_INITIALIZED'
+      )
     return { senderUUID: senderAccount.uuid, receiverUUID: receiverAccount.uuid }
   } catch (error) {
     throw error
@@ -52,7 +61,8 @@ const checkForDuplicateTransaction = async (
         )
       }
     )
-    if (duplicateTransactionsHistoric.length) throw 'double_transaction'
+    if (duplicateTransactionsHistoric.length)
+      throw new DoubleTransactionException('double_transaction', 406, 'E_DOUBLE_TRANSACTION')
   } catch (error) {
     throw error
   }
@@ -72,8 +82,10 @@ const checkIfAccountsHaveLimit = async (
       receiverUUID,
       'accountUUID'
     )
-    if (isEmpty(senderAccountLimit)) throw 'insufficient_limit'
-    if (senderAccountLimit.availableLimit - transactionValue < 0) throw 'insufficient_limit'
+    if (isEmpty(senderAccountLimit))
+      throw new InsufficientLimitException('insufficient_limit', 406, 'E_INSUFFICIENT_LIMIT')
+    if (senderAccountLimit.availableLimit - transactionValue < 0)
+      throw new InsufficientLimitException('insufficient_limit', 406, 'E_INSUFFICIENT_LIMIT')
     return {
       senderLimit: senderAccountLimit.availableLimit,
       receiverLimit: receiverAccountLimit.availableLimit,
@@ -99,11 +111,12 @@ const launchTransaction = async (payload: IlaunchTransactionPayload): Promise<an
   return transaction
 }
 
-const createNewAccountLimit = async (payload: IcreateNewAccountsLimitsPayload) => {
+const createNewAccountLimit = async (payload: IcreateNewAccountsLimitsPayload): Promise<any> => {
   const accountLimitHistoryScruct = new AccountLimitHistoryScruct()
   accountLimitHistoryScruct.accountUUID = payload.accountUUID
   accountLimitHistoryScruct.availableLimit = payload.availableLimit
   accountLimitHistoryScruct.timestamp = new Date().valueOf()
+  accountLimitHistoryScruct.lastTransactionUUID = payload.lastTransactionUUID
   accountLimitHistoryScruct.validated = false
 
   const newAccountLimit = accountLimitHistoryScruct.getAccountLimitHistoryData()
@@ -114,16 +127,6 @@ const createNewAccountLimit = async (payload: IcreateNewAccountsLimitsPayload) =
 
 export const storeService = async (request: RequestContract): Promise<ItransactionEventPayload> => {
   try {
-    const newTransactionValidator = schema.create({
-      type: schema.string({ trim: true }),
-      payload: schema.object().members({
-        'sender-document': schema.string(),
-        'receiver-document': schema.string(),
-        'value': schema.number(),
-        'datetime': schema.string(),
-      }),
-    })
-
     const body = await request.validate({ schema: newTransactionValidator })
 
     const { senderUUID, receiverUUID } = await checkIfAccountsExist(
@@ -149,11 +152,13 @@ export const storeService = async (request: RequestContract): Promise<Itransacti
     const senderAccountLimit = await createNewAccountLimit({
       accountUUID: senderUUID,
       availableLimit: senderLimit - body.payload.value,
+      lastTransactionUUID: transaction.uuid,
     })
 
     const receiverAccountLimit = await createNewAccountLimit({
       accountUUID: receiverUUID,
       availableLimit: receiverLimit + body.payload.value,
+      lastTransactionUUID: transaction.uuid,
     })
 
     return {
@@ -162,7 +167,25 @@ export const storeService = async (request: RequestContract): Promise<Itransacti
       receiverAccountLimit,
     }
   } catch (error) {
+    if (error.code === 'E_VALIDATION_FAILURE')
+      throw new InvalidDataException('invalid_data', 406, 'E_INVALID_DATA')
     throw error
+  }
+}
+
+export const transactionStoreServiceParsed = async (request: RequestContract): Promise<any> => {
+  const transacitionData = await storeService(request)
+  return {
+    'available-limit': transacitionData.senderAccountLimit.availableLimit,
+    'receiver-document': AccountStorage.getAccountByField(
+      transacitionData.transaction.receiverUUID,
+      'uuid'
+    ).document,
+    'sender-document': AccountStorage.getAccountByField(
+      transacitionData.transaction.senderUUID,
+      'uuid'
+    ).document,
+    'datetime': new Date(transacitionData.transaction.datetime).toISOString(),
   }
 }
 
@@ -189,4 +212,66 @@ export const confirmTransaction = async ({
   } catch (error) {
     throw error
   }
+}
+
+export const showService = async (uuid: string) => {
+  try {
+  } catch (error) {
+    throw error
+  }
+}
+
+export const showHistoryService = async (request: RequestContract) => {
+  try {
+    const body = await request.validate({ schema: showHistoryValidator })
+
+    const account = await AccountStorage.getAccountByField(body.payload.document, 'document')
+    if (isEmpty(account))
+      throw new AccountNotInitializedException(
+        'account_not_initialized',
+        406,
+        'E_ACCOUNT_NOT_INITIALIZED'
+      )
+    const history = Promise.all(
+      (await TransactionHistoryStorage.getTransactionListByUUID(account.uuid)).map(
+        async (transaction) => {
+          return {
+            ...transaction,
+            senderDocument: (await AccountStorage.getAccountByField(transaction.senderUUID, 'uuid'))
+              .document,
+            receiverDocument: (
+              await AccountStorage.getAccountByField(transaction.receiverUUID, 'uuid')
+            ).document,
+            availableLimit: AccountLimitHistoryStorage.getAccountLimitByField(
+              transaction.uuid,
+              'lastTransactionUUID'
+            ).availableLimit,
+          }
+        }
+      )
+    )
+    return history
+  } catch (error) {
+    if (error.code === 'E_VALIDATION_FAILURE')
+      throw new InvalidDataException('invalid_data', 406, 'E_INVALID_DATA')
+    throw error
+  }
+}
+
+export const transactionShowHistoryServiceParsed = async (request: RequestContract) => {
+  const transacitionHistoryData = await showHistoryService(request)
+
+  return Promise.all(
+    await transacitionHistoryData.map(async (transaciton: any) => {
+      return {
+        'sender-document': AccountStorage.getAccountByField(transaciton.senderUUID, 'uuid')
+          .document,
+        'receiver-document': AccountStorage.getAccountByField(transaciton.receiverUUID, 'uuid')
+          .document,
+        'value': transaciton.value,
+        'datetime': new Date(transaciton.datetime).toISOString(),
+        'available-limit': transaciton.availableLimit,
+      }
+    })
+  )
 }

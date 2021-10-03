@@ -1,0 +1,76 @@
+/input:
+  post:
+    tags:
+      - Input
+    summary: Input for all actions
+    requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                type:
+                  type: string
+                  example: 'initialize_account'
+                  required: true
+                payload:
+                  properties:
+                    name:
+                      type: string
+                      example: 'Joana Bárbara Caldeira'
+                      required: true
+                    document:
+                      type: string
+                      example: '999.999.999-99'
+                      required: true
+                    available-limit:
+                      type: number
+                      example: 1000
+                      required: true
+    responses:
+      201:
+        description: Success Operation
+        content:
+          application/json:
+            schema:
+              properties:
+                type:
+                  type: string
+                  example: 'initialize_account'
+                  required: true
+                status:
+                  type: string
+                  example: 'success'
+                  required: true
+                result:
+                  properties:
+                    name:
+                      type: string
+                      example: 'Joana Bárbara Caldeira'
+                      required: true
+                    document:
+                      type: string
+                      example: '999.999.999-99'
+                      required: true
+                    available-limit:
+                      type: number
+                      example: 1000
+                      required: true
+      406:
+        description: Failure Operation
+        content:
+          application/json:
+            schema:
+              properties:
+                type:
+                  type: string
+                  example: 'initialize_account'
+                  required: true
+                status:
+                  type: string
+                  example: 'failure'
+                  required: true
+                violation:
+                  type: string
+                  example: 'account_already_initialized'
+                  required: true

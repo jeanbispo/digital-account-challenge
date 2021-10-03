@@ -6,6 +6,7 @@ export default class AccountLimitHistoryScruct {
   private _availableLimit: number
   private _timestamp: number
   private _validated: boolean
+  private _lastTransactionUUID: string | null
 
   constructor() {
     this._accountLimitHistoryScructUUID = uuidv4()
@@ -51,6 +52,14 @@ export default class AccountLimitHistoryScruct {
     this._validated = validated
   }
 
+  public get lastTransactionUUID() {
+    return this._lastTransactionUUID
+  }
+
+  public set lastTransactionUUID(lastTransactionUUID: string | null) {
+    this._lastTransactionUUID = lastTransactionUUID
+  }
+
   public getAccountLimitHistoryData() {
     return {
       uuid: this._accountLimitHistoryScructUUID,
@@ -58,6 +67,7 @@ export default class AccountLimitHistoryScruct {
       availableLimit: this._availableLimit,
       validated: this._validated,
       timestamp: this._timestamp,
+      lastTransactionUUID: this._lastTransactionUUID,
     }
   }
 }
