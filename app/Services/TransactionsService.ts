@@ -9,6 +9,8 @@ import AccountLimitHistoryScruct from 'App/Models/AccountLimitHistory/AccountLim
 import TransactionHistoryStorage from 'App/Models/TransactionHistory/TransactionHistoryStorage'
 import TransactionHistorySctruct from 'App/Models/TransactionHistory/TransactionHistorySctruct'
 
+export const indexService = async () => await TransactionHistoryStorage.getList()
+
 const checkIfAccountsExist = async (
   senderDocument: string,
   receiverDocument: string
@@ -88,9 +90,7 @@ const createNewAccountLimit = async (payload: IcreateNewAccountsLimitsPayload) =
   return newAccountLimit
 }
 
-export const storeTransaction = async (
-  request: RequestContract
-): Promise<ItransactionEventPayload> => {
+export const storeService = async (request: RequestContract): Promise<ItransactionEventPayload> => {
   try {
     const newTransactionValidator = schema.create({
       type: schema.string({ trim: true }),
@@ -166,5 +166,7 @@ export const confirmTransaction = async ({
       ...transaction,
       confirmed: true,
     })
-  } catch (error) {}
+  } catch (error) {
+    throw error
+  }
 }
