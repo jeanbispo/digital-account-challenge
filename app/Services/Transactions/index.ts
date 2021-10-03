@@ -1,4 +1,3 @@
-import { RequestContract } from '@ioc:Adonis/Core/Request'
 import isEmpty from 'is-empty'
 import { v4 as uuidv4 } from 'uuid'
 import { DateTime, Interval } from 'luxon'
@@ -13,9 +12,11 @@ import AccountNotInitializedException from 'App/Exceptions/AccountNotInitialized
 import {
   IcreateNewAccountsLimitsPayload,
   IlaunchTransactionPayload,
+  IstoreTransactionBody,
+  IstoreTransactionParsedResponse,
   ItransactionEventPayload,
+  ItransactionHistoryBody,
 } from './interfaces'
-import { newTransactionValidator, showHistoryValidator } from './validators'
 import InvalidDataException from 'App/Exceptions/InvalidDataException'
 
 export const indexService = async () => await TransactionHistoryStorage.getList()
@@ -125,10 +126,10 @@ const createNewAccountLimit = async (payload: IcreateNewAccountsLimitsPayload): 
   return newAccountLimit
 }
 
-export const storeService = async (request: RequestContract): Promise<ItransactionEventPayload> => {
+export const storeService = async (
+  body: IstoreTransactionBody
+): Promise<ItransactionEventPayload> => {
   try {
-    const body = await request.validate({ schema: newTransactionValidator })
-
     const { senderUUID, receiverUUID } = await checkIfAccountsExist(
       body.payload['sender-document'],
       body.payload['receiver-document']
@@ -173,8 +174,10 @@ export const storeService = async (request: RequestContract): Promise<Itransacti
   }
 }
 
-export const transactionStoreServiceParsed = async (request: RequestContract): Promise<any> => {
-  const transacitionData = await storeService(request)
+export const transactionStoreServiceParsed = async (
+  body: IstoreTransactionBody
+): Promise<IstoreTransactionParsedResponse> => {
+  const transacitionData = await storeService(body)
   return {
     'available-limit': transacitionData.senderAccountLimit.availableLimit,
     'receiver-document': AccountStorage.getAccountByField(
@@ -214,17 +217,11 @@ export const confirmTransaction = async ({
   }
 }
 
-export const showService = async (uuid: string) => {
-  try {
-  } catch (error) {
-    throw error
-  }
-}
+export const showService = async (uuid: string) =>
+  await TransactionHistoryStorage.getTransactionByField(uuid, 'uuid')
 
-export const showHistoryService = async (request: RequestContract) => {
+export const showHistoryService = async (body: ItransactionHistoryBody) => {
   try {
-    const body = await request.validate({ schema: showHistoryValidator })
-
     const account = await AccountStorage.getAccountByField(body.payload.document, 'document')
     if (isEmpty(account))
       throw new AccountNotInitializedException(
@@ -258,8 +255,8 @@ export const showHistoryService = async (request: RequestContract) => {
   }
 }
 
-export const transactionShowHistoryServiceParsed = async (request: RequestContract) => {
-  const transacitionHistoryData = await showHistoryService(request)
+export const transactionShowHistoryServiceParsed = async (body: ItransactionHistoryBody) => {
+  const transacitionHistoryData = await showHistoryService(body)
 
   return Promise.all(
     await transacitionHistoryData.map(async (transaciton: any) => {
