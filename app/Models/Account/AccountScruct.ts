@@ -1,6 +1,4 @@
-import { v4 as uuidv4 } from 'uuid'
-
-import AccountLimitHistoryScruct from '../AccountLimitHistory/AccountLimitHistoryScruct'
+import AccountLimitHistoryScruct from 'App/Models/AccountLimitHistory/AccountLimitHistoryScruct'
 
 export default class AccountStruct extends AccountLimitHistoryScruct {
   private _name: string

@@ -7,16 +7,13 @@ import { v4 as uuidv4 } from 'uuid'
 import AccountLimitHistoryStorage from 'App/Models/AccountLimitHistory/AccountLimitHistoryStorage'
 
 const accountScruct = new AccountScruct()
-// const accountStorage = new AccountStorage()
 
 export default class AccountsController {
-  public async index({ request, response }: HttpContextContract) {
+  public async index({ response }: HttpContextContract) {
     try {
       const accountsList = await AccountStorage.getList()
       response.send(accountsList)
-    } catch (error) {
-      console.log(error)
-    }
+    } catch (error) {}
   }
 
   public async store({ request, response }: HttpContextContract) {

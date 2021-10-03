@@ -1,4 +1,4 @@
-import AccountLimitHistoryStorage from '../AccountLimitHistory/AccountLimitHistoryStorage'
+import AccountLimitHistoryStorage from 'App/Models/AccountLimitHistory/AccountLimitHistoryStorage'
 
 interface Iaccount {
   name: string
@@ -15,7 +15,10 @@ export default abstract class AccountStorage {
         ...account,
         'available-limit':
           (
-            await AccountLimitHistoryStorage.getAccountLastValidLimitByField(account.uuid, 'uuid')
+            await AccountLimitHistoryStorage.getAccountLastValidLimitByField(
+              account.uuid,
+              'accountUUID'
+            )
           )?.availableLimit || 0,
       }))
     )

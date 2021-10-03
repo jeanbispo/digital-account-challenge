@@ -1,0 +1,82 @@
+/transactions:
+  get:
+    tags:
+      - Transactions
+    summary: Get Transactions List
+    responses:
+      200:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true
+  post:
+    tags:
+      - Transactions
+    summary: Create Transaction
+    requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                type:
+                  type: string
+                  example: 'transaction'
+                  required: true
+                payload:
+                  properties:
+                    sender-document:
+                      type: string
+                      example: '999.999.999-99'
+                      required: true
+                    receiver-document:
+                      type: string
+                      example: '999.999.999-99'
+                      required: true
+                    value:
+                      type: number
+                      example: 100
+                      required: true
+                    datetime:
+                      type: datetime
+                      example: '2021-09-05T13:15:30Z'
+                      required: true
+    responses:
+      201:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true
+
+/transactions/{uuid}:
+  get:
+    tags:
+      - Transactions
+    summary: Get Transaction by UUID
+    parameters:
+      - in: path
+        description: UUID of Transaction
+        name: uuid
+        required: true
+        type: string
+    responses:
+      200:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true
