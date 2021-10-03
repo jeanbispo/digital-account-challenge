@@ -80,3 +80,36 @@
                   type: string
                   example: '1234567890'
                   required: true
+
+/transactions/history:
+  post:
+    tags:
+      - Transactions
+    summary: Get Transaction Account History by Account Document
+    requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                type:
+                  type: string
+                  example: 'transaction'
+                  required: true
+                payload:
+                  properties:
+                    document:
+                      type: string
+                      example: '999.999.999-99'
+                      required: true
+    responses:
+      200:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true

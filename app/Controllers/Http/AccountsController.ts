@@ -1,21 +1,29 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { indexService, showService, storeService } from 'App/Services/AccountsService'
+import InvalidDataException from 'App/Exceptions/InvalidDataException'
+import ResponseBodyTemplate from 'App/Helpers/responseBodyTemplate'
+import { indexService, showService, storeService } from 'App/Services/Accounts'
+import { newAccountValidator } from 'App/Services/Accounts/validators'
 
 export default class AccountsController {
   public async index({ response }: HttpContextContract) {
     try {
       const accountsList = await indexService()
-      response.send(accountsList)
-    } catch (error) {}
+      response.send(ResponseBodyTemplate({ type: 'account_list', result: accountsList }))
+    } catch (error) {
+      throw error
+    }
   }
 
   public async store({ request, response }: HttpContextContract) {
     try {
-      const account = await storeService(request)
+      const body = await request.validate({ schema: newAccountValidator })
+      const account = await storeService(body)
 
-      response.send(account)
+      response.send(ResponseBodyTemplate({ type: 'initialize_account', result: account }))
     } catch (error) {
-      response.badRequest(error.messages)
+      if (error.code === 'E_VALIDATION_FAILURE')
+        throw new InvalidDataException('invalid_data', 406, 'E_INVALID_DATA')
+      throw error
     }
   }
 
@@ -23,7 +31,9 @@ export default class AccountsController {
     try {
       const { id: uuid } = request.params()
       const account = await showService(uuid)
-      response.send(account)
-    } catch (error) {}
+      response.send(ResponseBodyTemplate({ type: 'account_show', result: account }))
+    } catch (error) {
+      throw error
+    }
   }
 }

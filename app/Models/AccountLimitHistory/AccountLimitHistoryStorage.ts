@@ -9,7 +9,7 @@ interface IaccountLimitStorage {
 export default abstract class AccountLimitHistoryStorage {
   private static list: Array<any> = []
 
-  public static getList() {
+  public static async getList(): Promise<Array<IaccountLimitStorage>> {
     return AccountLimitHistoryStorage.list
   }
 
@@ -18,6 +18,14 @@ export default abstract class AccountLimitHistoryStorage {
       AccountLimitHistoryStorage.list.filter(
         async (_account: any) => _account[field] === valueToSearch
       )
+    )
+
+    return searchResult || {}
+  }
+
+  public static getAccountLimitByField(valueToSearch: string, field: string) {
+    const searchResult = AccountLimitHistoryStorage.list.find(
+      (_account: any) => _account[field] === valueToSearch
     )
 
     return searchResult || {}

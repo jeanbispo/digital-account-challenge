@@ -1,5 +1,6 @@
 import Event from '@ioc:Adonis/Core/Event'
-import { confirmTransaction, ItransactionEventPayload } from 'App/Services/TransactionsService'
+import { confirmTransaction } from 'App/Services/Transactions'
+import { ItransactionEventPayload } from 'App/Services/Transactions/interfaces'
 
 Event.on('transaction', async (payload: ItransactionEventPayload) => {
   await confirmTransaction(payload)

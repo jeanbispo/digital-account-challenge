@@ -10,13 +10,22 @@ interface ItransactionStorage {
 export default abstract class TransactionHistoryStorage {
   private static list: any = []
 
-  public static async getList() {
+  public static async getList(): Promise<Array<ItransactionStorage>> {
     return TransactionHistoryStorage.list
   }
 
-  public static getAccountByField(valueToSearch: string, field: string) {
+  public static getTransactionByField(valueToSearch: string, field: string) {
     const searchResult = TransactionHistoryStorage.list.find(
-      (_account: any) => _account[field] === valueToSearch
+      (_account: ItransactionStorage) => _account[field] === valueToSearch
+    )
+
+    return searchResult || {}
+  }
+
+  public static getTransactionListByUUID(uuid: string) {
+    const searchResult = TransactionHistoryStorage.list.filter(
+      (_account: ItransactionStorage) =>
+        _account.senderUUID === uuid || _account.receiverUUID === uuid
     )
 
     return searchResult || {}

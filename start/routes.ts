@@ -7,3 +7,5 @@ Route.get('/', async () => {
 Route.resource('accounts', 'AccountsController').only(['index', 'store', 'show'])
 Route.resource('account-limits', 'AccountLimitsController').only(['index', 'show'])
 Route.resource('transactions', 'TransactionsController').only(['index', 'store', 'show'])
+Route.get('transactions/history/:document', 'TransactionsController.history')
+Route.post('input', 'InputController.input')
