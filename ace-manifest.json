@@ -1,0 +1,52 @@
+{
+  "commands": {
+    "dump:rcfile": {
+      "settings": {},
+      "commandPath": "@adonisjs/core/build/commands/DumpRc",
+      "commandName": "dump:rcfile",
+      "description": "Dump contents of .adonisrc.json file along with defaults",
+      "args": [],
+      "aliases": [],
+      "flags": []
+    },
+    "list:routes": {
+      "settings": {
+        "loadApp": true
+      },
+      "commandPath": "@adonisjs/core/build/commands/ListRoutes",
+      "commandName": "list:routes",
+      "description": "List application routes",
+      "args": [],
+      "aliases": [],
+      "flags": [
+        {
+          "name": "json",
+          "propertyName": "json",
+          "type": "boolean",
+          "description": "Output as JSON"
+        }
+      ]
+    },
+    "generate:key": {
+      "settings": {},
+      "commandPath": "@adonisjs/core/build/commands/GenerateKey",
+      "commandName": "generate:key",
+      "description": "Generate a new APP_KEY secret",
+      "args": [],
+      "aliases": [],
+      "flags": []
+    },
+    "swagger:generate": {
+      "settings": {
+        "loadApp": true
+      },
+      "commandPath": "adonis5-swagger/build/commands/GenerateSwaggerFile",
+      "commandName": "swagger:generate",
+      "description": "Generate swagger file",
+      "args": [],
+      "aliases": [],
+      "flags": []
+    }
+  },
+  "aliases": {}
+}

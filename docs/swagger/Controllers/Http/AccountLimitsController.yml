@@ -1,0 +1,39 @@
+/account-limits:
+  get:
+    tags:
+      - Account Limits
+    summary: Get Account Limits List
+    responses:
+      200:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true
+
+/account-limits/{uuid}:
+  get:
+    tags:
+      - Account Limits
+    summary: Get Account Limits by UUID
+    parameters:
+      - in: path
+        description: UUID of account limit
+        name: uuid
+        required: true
+        type: string
+    responses:
+      200:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true

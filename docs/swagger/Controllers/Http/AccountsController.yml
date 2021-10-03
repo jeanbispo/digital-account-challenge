@@ -1,0 +1,78 @@
+/accounts:
+  get:
+    tags:
+      - Accounts
+    summary: Get Accounts List
+    responses:
+      200:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true
+  post:
+    tags:
+      - Accounts
+    summary: Create Account
+    requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                type:
+                  type: string
+                  example: 'initialize_account'
+                  required: true
+                payload:
+                  properties:
+                    name:
+                      type: string
+                      example: 'Joana Bárbara Caldeira'
+                      required: true
+                    document:
+                      type: string
+                      example: '999.999.999-99'
+                      required: true
+                    available-limit:
+                      type: number
+                      example: 1000
+                      required: true
+    responses:
+      201:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true
+
+/accounts/{uuid}:
+  get:
+    tags:
+      - Accounts
+    summary: Get Account by UUID
+    parameters:
+      - in: path
+        description: UUID of account
+        name: uuid
+        required: true
+        type: string
+    responses:
+      200:
+        description: Send hello message
+        content:
+          application/json:
+            schema:
+              properties:
+                phone:
+                  type: string
+                  example: '1234567890'
+                  required: true
