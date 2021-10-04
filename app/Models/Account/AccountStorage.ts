@@ -10,7 +10,7 @@ export default abstract class AccountStorage {
   private static list: any = []
 
   public static async getList(): Promise<Array<IaccountStorage>> {
-    return await Promise.all(
+    return Promise.all(
       AccountStorage.list.map(async (account) => ({
         ...account,
         'available-limit':

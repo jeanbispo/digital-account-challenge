@@ -43,7 +43,7 @@ export default abstract class AccountLimitHistoryStorage {
       (_account: any) => _account[field] === valueToSearch && _account.validated
     )
     if (searchResult.length)
-      return await AccountLimitHistoryStorage.getLastValidAccountLimit(searchResult)
+      return AccountLimitHistoryStorage.getLastValidAccountLimit(searchResult)
     return {}
   }
 
